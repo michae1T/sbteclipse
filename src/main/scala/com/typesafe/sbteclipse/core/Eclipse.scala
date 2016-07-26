@@ -124,10 +124,11 @@ private object Eclipse extends EclipseSDTConfig {
       val configs = configurations(ref, state)
       val source = withSourceArg getOrElse withSource(ref, state)
       val javadoc = withJavadocArg getOrElse withJavadoc(ref, state)
+      val projectPrefix = prefix(baseDirectory(ref, state).toOption)
       val applic =
         (classpathTransformerFactories(ref, state).toList map (_.createTransformer(ref, state))).sequence[Validation, RewriteRule] |@|
           (projectTransformerFactories(ref, state).toList map (_.createTransformer(ref, state))).sequence[Validation, RewriteRule] |@|
-          name(ref, state) |@|
+          name(ref, state).map(projectPrefix + _) |@|
           buildDirectory(state) |@|
           baseDirectory(ref, state) |@|
           mapConfigurations(configs, config => srcDirectories(ref, createSrc(ref, state)(config), eclipseOutput(ref, state)(config), state)(config)) |@|
@@ -135,7 +136,7 @@ private object Eclipse extends EclipseSDTConfig {
           compileOrder(ref, state) |@|
           eclipseOutputValidation(ref, state) |@|
           mapConfigurations(removeExtendedConfigurations(configs), externalDependencies(ref, source, javadoc, state)) |@|
-          mapConfigurations(configs, projectDependencies(ref, project, state))
+          mapConfigurations(configs, projectDependencies(ref, project, projectPrefix, state))
       applic(
         handleProject(
           jreContainer(executionEnvironmentArg orElse executionEnvironment(ref, state)),
@@ -147,6 +148,12 @@ private object Eclipse extends EclipseSDTConfig {
       )
     }
     effects.toList.sequence[Validation, IO[String]].map((list: List[IO[String]]) => list.toStream.sequence.map(_.toList))
+  }
+
+  def prefix(baseDirectory: Option[File]) = {
+    baseDirectory.map { dir =>
+      dir.getParentFile.getName + "-"
+    }.getOrElse("")
   }
 
   def removeExtendedConfigurations(configurations: Seq[Configuration]): Seq[Configuration] = {
@@ -535,13 +542,14 @@ private object Eclipse extends EclipseSDTConfig {
   def projectDependencies(
     ref: ProjectRef,
     project: ResolvedProject,
+    prefix: String,
     state: State)(
       configuration: Configuration): Validation[Seq[String]] = {
     val projectDependencies = project.dependencies collect {
       case dependency if isInConfiguration(configuration, ref, dependency, state) =>
         settingValidation(Keys.name in dependency.project, state)
     }
-    val projectDependenciesSeq = projectDependencies.toList.sequence
+    val projectDependenciesSeq = projectDependencies.toList.sequence.map(_.map(prefix + _))
     state.log.debug("Project dependencies for configuration '%s': %s".format(configuration, projectDependenciesSeq))
     projectDependenciesSeq
   }
