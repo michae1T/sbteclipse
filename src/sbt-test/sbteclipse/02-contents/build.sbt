@@ -103,8 +103,8 @@ TaskKey[Unit]("verify-classpath-xml-root") <<= baseDirectory map { dir =>
     error("""Expected .classpath of root project to contain <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_COMPILER_CONTAINER"/> """)
   if (!(classpath.child contains <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>))
     error("""Expected .classpath of root project to contain <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/> """)
-  if (!(classpath.child contains <classpathentry kind="output" path="bin"/>))
-    error("""Expected .classpath of root project to contain <classpathentry kind="output" path="bin"/> """)
+  if (!(classpath.child contains <classpathentry kind="output" path="target/eclipse/classes"/>))
+    error("""Expected .classpath of root project to contain <classpathentry kind="output" path="target/eclipse/classes"/> """)
 }
 
 TaskKey[Unit]("verify-classpath-xml-sub") <<= baseDirectory map { dir =>

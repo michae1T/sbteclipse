@@ -322,7 +322,7 @@ private object Eclipse extends EclipseSDTConfig {
         (projectDependencies map EclipseClasspathEntry.Project) ++
         (externalDependencies map libEntry(buildDirectory, baseDirectory, relativizeLibs, state)) ++
         (Seq(jreContainer) map EclipseClasspathEntry.Con) ++
-        (Seq(eclipseOutput.getOrElse("/bin")) map EclipseClasspathEntry.Output)
+        (Seq(eclipseOutput.getOrElse("target/eclipse/classes")) map EclipseClasspathEntry.Output)
       <classpath>{ entries map (_.toXml) }</classpath>
     }
   }
