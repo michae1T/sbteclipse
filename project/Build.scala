@@ -39,7 +39,6 @@ object Build extends Build {
       // version is defined in version.sbt in order to support sbt-release
       scalacOptions ++= Seq("-unchecked", "-deprecation"),
       sbtPlugin := true,
-      publishMavenStyle := false,
       sbtVersion in GlobalScope := {
         System.getProperty("sbt.build.version", (sbtVersion in GlobalScope).value)
       },
@@ -54,9 +53,9 @@ object Build extends Build {
         (sbtDependency in GlobalScope).value.copy(revision = (sbtVersion in GlobalScope).value)
       },
       publishMavenStyle := false,
-      bintrayOrganization in bintray := Some("sbt"),
-      name in bintray := "sbteclipse",
-      repository in bintray := "sbt-plugin-releases",
+      bintrayOrganization in bintray := Some("michae1t"),
+      name in bintray := "sbteclipse-productivity",
+      repository in bintray := "maven",
       licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
       publishArtifact in (Compile, packageDoc) := false,
       publishArtifact in (Compile, packageSrc) := false,
