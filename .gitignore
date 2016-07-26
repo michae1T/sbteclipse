@@ -11,6 +11,8 @@ target/
 .scala_dependencies
 .settings
 .target/
+.cache-main
+.cache-tests
 
 # IntelliJ
 .idea/
@@ -24,3 +26,4 @@ out/
 
 # Mac
 .DS_Store
+/bin/
