@@ -133,6 +133,7 @@ private object Eclipse extends EclipseSDTConfig {
           mapConfigurations(configs, config => srcDirectories(ref, createSrc(ref, state)(config), eclipseOutput(ref, state)(config), state)(config)) |@|
           scalacOptions(ref, state) |@|
           compileOrder(ref, state) |@|
+          eclipseOutputValidation(ref, state) |@|
           mapConfigurations(removeExtendedConfigurations(configs), externalDependencies(ref, source, javadoc, state)) |@|
           mapConfigurations(configs, projectDependencies(ref, project, state))
       applic(
@@ -202,6 +203,7 @@ private object Eclipse extends EclipseSDTConfig {
       srcDirectories: Seq[(File, Option[File])],
       scalacOptions: Seq[(String, String)],
       compileOrder: Option[String],
+      eclipseOutput: Option[String],
       externalDependencies: Seq[Lib],
       projectDependencies: Seq[String]): IO[String] = {
     for {
@@ -220,6 +222,7 @@ private object Eclipse extends EclipseSDTConfig {
         externalDependencies,
         projectDependencies,
         jreContainer,
+        eclipseOutput,
         state
       )
       _ <- saveXml(baseDirectory / ".project", new RuleTransformer(projectTransformers: _*)(projectXml(name, builderAndNatures, linkedSrcDirectories)))
@@ -298,6 +301,7 @@ private object Eclipse extends EclipseSDTConfig {
     externalDependencies: Seq[Lib],
     projectDependencies: Seq[String],
     jreContainer: String,
+    eclipseOutput: Option[String],
     state: State): IO[Node] = {
     val srcEntriesIoSeq =
       for {
@@ -318,7 +322,7 @@ private object Eclipse extends EclipseSDTConfig {
         (projectDependencies map EclipseClasspathEntry.Project) ++
         (externalDependencies map libEntry(buildDirectory, baseDirectory, relativizeLibs, state)) ++
         (Seq(jreContainer) map EclipseClasspathEntry.Con) ++
-        (Seq("bin") map EclipseClasspathEntry.Output)
+        (Seq(eclipseOutput.getOrElse("/bin")) map EclipseClasspathEntry.Output)
       <classpath>{ entries map (_.toXml) }</classpath>
     }
   }
@@ -455,6 +459,9 @@ private object Eclipse extends EclipseSDTConfig {
       if (order == xsbti.compile.CompileOrder.Mixed) None
       else Some(order.toString)
     )
+
+  def eclipseOutputValidation(ref: ProjectRef, state: State): Validation[Option[String]] =
+    settingValidation(EclipseKeys.eclipseOutput in ref, state)
 
   def externalDependencies(
     ref: ProjectRef,
